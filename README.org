@@ -1,0 +1,9 @@
+[[https://github.com/ludvb/servant-jsaddle-streams/actions/workflows/build.yml][https://github.com/ludvb/servant-jsaddle-streams/actions/workflows/build.yml/badge.svg]]
+
+* servant-jsaddle-streams
+
+This is a fork of [[https://github.com/haskell-servant/servant-jsaddle][servant-jsaddle]] with support for streaming responses using the JavaScript [[https://developer.mozilla.org/en-US/docs/Web/API/Streams_API][Streams API]].
+
+* Usage
+
+See documentation for `servant-client`.
