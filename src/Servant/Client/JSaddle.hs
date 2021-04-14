@@ -92,9 +92,6 @@ import qualified Data.Text.Encoding.Error as T
 import GHC.Generics
   ( Generic,
   )
-import GHCJS.Buffer
-  ( createFromArrayBuffer,
-  )
 import qualified GHCJS.Buffer as Buffer
 import qualified GHCJS.DOM
 import qualified GHCJS.DOM.Location as Location
@@ -106,17 +103,15 @@ import GHCJS.DOM.Types
 import qualified GHCJS.DOM.Types as JS
 import qualified GHCJS.DOM.Window as Window
 import qualified JavaScript.Object as Object
-import JavaScript.Object.Internal
-  ( Object
-      ( Object
-      ),
+import Language.Javascript.JSaddle
+  ( Object (Object),
+    js0,
+    jsg,
+    new,
+    runJSaddle,
+    (!),
+    (!!),
   )
-import JavaScript.TypedArray.ArrayBuffer.Internal
-  ( SomeArrayBuffer
-      ( SomeArrayBuffer
-      ),
-  )
-import Language.Javascript.JSaddle (js0, jsg, new, runJSaddle, (!), (!!))
 import qualified Language.Javascript.JSaddle.Types as JSaddle
 import Language.Javascript.JSaddle.Value
   ( JSValue
@@ -225,15 +220,16 @@ newtype ByteString = ByteString {unByteString :: BS.ByteString}
 
 instance JS.ToJSVal ByteString where
   toJSVal x = do
-    (buffer, _offset, _len) <- JSaddle.ghcjsPure $ Buffer.fromByteString . unByteString $ x
-    mutableBuffer <- Buffer.thaw buffer
-    SomeArrayBuffer jsval <- JSaddle.ghcjsPure $ Buffer.getArrayBuffer mutableBuffer
-    pure jsval
+    (buf, _offset, _len) <- JSaddle.ghcjsPure $ Buffer.fromByteString . unByteString $ x
+    mutableBuf <- JSaddle.ghcjsPure . Buffer.getArrayBuffer =<< Buffer.thaw buf
+    pure (JS.pToJSVal mutableBuf)
 
 instance JS.FromJSVal ByteString where
   fromJSVal x = do
-    buffer <- JSaddle.ghcjsPure $ createFromArrayBuffer $ SomeArrayBuffer x
-    bs <- JSaddle.ghcjsPure $ Buffer.toByteString 0 Nothing buffer
+    buf <-
+      Buffer.freeze
+        =<< JSaddle.ghcjsPure (Buffer.createFromArrayBuffer (JS.pFromJSVal x))
+    bs <- JSaddle.ghcjsPure $ Buffer.toByteString 0 Nothing buf
     pure . Just . ByteString $ bs
 
 instance Alt ClientM where
