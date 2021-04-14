@@ -112,6 +112,7 @@ import Language.Javascript.JSaddle
     (!),
     (!!),
   )
+import Language.Javascript.JSaddle.Object (MakeObject (makeObject))
 import qualified Language.Javascript.JSaddle.Types as JSaddle
 import Language.Javascript.JSaddle.Value
   ( JSValue
@@ -351,7 +352,8 @@ parseHeaders resp =
         )
   where
     entries headers = do
-      entriesObj <- headers ^. js0 ("entries" :: JS.JSString)
+      headersObj <- makeObject . JS.unHeaders $ headers
+      entriesObj <- headersObj ^. js0 ("entries" :: JS.JSString)
       getEntries entriesObj
     getEntries entriesObj = do
       maybeEntry <- runMaybeT $ do
